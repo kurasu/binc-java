@@ -5,26 +5,28 @@ import java.nio.charset.StandardCharsets;
 
 public class BincIo {
     public static void writeLength(DataOutputStream out, long value) throws IOException {
-        if (value < 0) {
-            throw new IllegalArgumentException("Value cannot be negative");
+        boolean wrote = false;
+        for (int i = 0; i <= 8; i++) {
+            final long x = (value >> (7 * (9 - i))) & 0x7f;
+            if (wrote || x != 0) {
+                out.writeByte((int) (x | 0x80));
+                wrote = true;
+            }
         }
-        while ((value & ~0x7FL) != 0L) {
-            out.writeByte((int) ((value & 0x7F) | 0x80));
-            value >>>= 7;
-        }
-        out.writeByte((int) value);
+        out.writeByte((int) (value & 0x7f));
     }
 
 
     public static void writeLengthInverted(DataOutputStream out, long value) throws IOException {
-        if (value < 0) {
-            throw new IllegalArgumentException("Value cannot be negative");
+        boolean wrote = false;
+        for (int i = 0; i <= 8; i++) {
+            final long x = (value >> (7 * (9 - i))) & 0x7f;
+            if (wrote || x != 0) {
+                out.writeByte((int) (x | 0x80) ^ 0xFF);
+                wrote = true;
+            }
         }
-        while ((value & ~0x7FL) != 0L) {
-            out.writeByte((int) (((value & 0x7F) ^ 0x7F) | 0x80));
-            value >>>= 7;
-        }
-        out.writeByte((int) value);
+        out.writeByte((int) (value & 0x7f) ^ 0xFF);
     }
 
     public static void writeString(DataOutputStream out, String value) throws IOException {
@@ -38,27 +40,29 @@ public class BincIo {
     }
 
     public static long readLength(DataInputStream in) throws IOException {
-        long value = 0L;
-        int shift = 0;
-        byte b;
-        do {
-            b = in.readByte();
-            value |= (long) (b & 0x7F) << shift;
-            shift += 7;
-        } while ((b & 0x80) != 0);
-        return value;
+        long value = 0;
+        while (true)
+        {
+            value = value << 7;
+            int b = in.readUnsignedByte();
+            value |= (b & 0x7F);
+            if ((b & 0x80) == 0) {
+                return value;
+            }
+        }
     }
 
     public static long readLengthInverted(DataInputStream in) throws IOException {
-        long value = 0L;
-        int shift = 0;
-        byte b;
-        do {
-            b = in.readByte();
-            value |= (long) ((b ^ 0x7F) & 0x7F) << shift;
-            shift += 7;
-        } while ((b & 0x80) == 0);
-        return value;
+        long value = 0;
+        while (true)
+        {
+            value = value << 7;
+            int b = in.readUnsignedByte() ^ 0xFF;
+            value |= (b & 0x7F);
+            if ((b & 0x80) == 0) {
+                return value;
+            }
+        }
     }
 
     public static String readString(DataInputStream in) throws IOException {

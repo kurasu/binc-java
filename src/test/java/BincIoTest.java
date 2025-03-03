@@ -1,20 +1,44 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BincIoTest {
 
     @Test
-    void writeLength() {
+    void writeLength() throws IOException {
+        final var values = new long[]{ 20, 4, 128, 303, 999, 12323003 };
+        final var bytes = new ByteArrayOutputStream();
+        final var out = new DataOutputStream(bytes);
+
+        for (long value : values) {
+            BincIo.writeLength(out, value);
+        }
+
+        final var in = new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
+
+        for (long value : values) {
+            Assertions.assertEquals(value, BincIo.readLength(in));
+        }
     }
 
     @Test
-    void writeLengthInverted() {
+    void writeLengthInverted() throws IOException {
+        final var values = new long[]{ 20, 4, 128, 303, 999, 12323003 };
+        final var bytes = new ByteArrayOutputStream();
+        final var out = new DataOutputStream(bytes);
+
+        for (long value : values) {
+            BincIo.writeLengthInverted(out, value);
+        }
+
+        final var in = new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
+
+        for (long value : values) {
+            Assertions.assertEquals(value, BincIo.readLengthInverted(in));
+        }
     }
 
     @Test
@@ -35,7 +59,7 @@ class BincIoTest {
 
     @Test
     void readLength256() throws IOException {
-        final var bytes = new byte[] {(byte) 0x81, 0x00 };
+        final var bytes = new byte[] {(byte) 0x82, 0x00 };
         final var in = new DataInputStream(new ByteArrayInputStream(bytes));
         final var length = BincIo.readLength(in);
         Assertions.assertEquals(256, length);
@@ -49,11 +73,11 @@ class BincIoTest {
         Assertions.assertEquals(23, length);
     }
     @Test
-    void readLengthInverted256() throws IOException {
+    void readLengthInverted128() throws IOException {
         final var bytes = new byte[] {(byte) 0x7E, (byte)0xFF};
         final var in = new DataInputStream(new ByteArrayInputStream(bytes));
         final var length = BincIo.readLengthInverted(in);
-        Assertions.assertEquals(256, length);
+        Assertions.assertEquals(128, length);
     }
 
     @Test
