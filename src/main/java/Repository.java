@@ -13,9 +13,9 @@ public class Repository {
         final var bincVersion = in.readInt();
 
         if (bincID != BincIo.toFourCC("binc"))
-            throw new IOException("Unexpected binc header");
-        if (bincVersion != 1)
-            throw new IOException("Unsupported binc version");
+            throw new IOException("binc header expected here");
+        if (bincVersion >= 1)
+            throw new IOException("Unsupported version");
 
         try {
             while (true) {
