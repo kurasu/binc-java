@@ -3,8 +3,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class BincIoTest {
 
     @Test
@@ -42,7 +40,20 @@ class BincIoTest {
     }
 
     @Test
-    void writeString() {
+    void writeString() throws IOException {
+        final var values = new String[]{ "Hello", "", "?", "\0", "he\0llo", "😍" };
+        final var bytes = new ByteArrayOutputStream();
+        final var out = new DataOutputStream(bytes);
+
+        for (final var value : values) {
+            BincIo.writeString(out, value);
+        }
+
+        final var in = new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
+
+        for (final var value : values) {
+            Assertions.assertEquals(value, BincIo.readString(in));
+        }
     }
 
     @Test
