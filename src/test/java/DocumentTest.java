@@ -1,4 +1,5 @@
 import binc.Document;
+import binc.Node;
 import binc.Repository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -53,8 +54,12 @@ class DocumentTest {
     @Test
     void writeComplex() throws IOException {
         final var document = new Document();
-        final var n1 = document.root().addChild();
-        final var n2 = document.root().addChild();
+        final var root = document.root();
+        final var mimeType = "application/book-store";
+        root.setAttribute("mime-type", mimeType);
+
+        final var n1 = root.addChild();
+        final var n2 = root.addChild();
         final var n3 = n2.addChild();
 
         n1.setType("shelf");
@@ -63,6 +68,7 @@ class DocumentTest {
         n1.setName("My favorites");
         n2.setName("To write");
         n2.setName("binc manual");
+        n2.setAttribute("chapters", "none");
 
         final var out = new ByteArrayOutputStream();
         document.write(new DataOutputStream(out));
@@ -73,6 +79,8 @@ class DocumentTest {
         Assertions.assertEquals(document.getRepository().getChanges().size(), repository.getChanges().size());
         final var readDocument = new Document(repository);
         Assertions.assertNotNull(readDocument);
-        Assertions.assertEquals(document.root().childCount(), readDocument.root().childCount());
+        Assertions.assertEquals(root.childCount(), readDocument.root().childCount());
+
+        Assertions.assertEquals(mimeType, readDocument.root().getStringAttribute("mime-type"));
     }
 }

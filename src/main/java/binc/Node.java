@@ -1,9 +1,6 @@
 package binc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Node {
 
@@ -70,11 +67,66 @@ public class Node {
     }
 
     public void setType(String typeName) {
-        final var id = document.nodeTypeNames.getIdForName(typeName);
-        if  (id == null) {
+        final var id = document.nodeTypeNames.getOrAddIdForName(typeName);
+        setType(id);
+    }
 
+    public void setAttribute(int key, String value) {
+        document.addAndApply(new Change.SetString(id, key, value));
+    }
+
+    public void setAttribute(String key, String value) {
+        final var id = document.attributeNames.getOrAddIdForName(key);
+        setAttribute(id, value);
+    }
+
+    public void setAttribute(int key, boolean value) {
+        document.addAndApply(new Change.SetBool(id, key, value));
+    }
+
+    public void setAttribute(String key, boolean value) {
+        final var id = document.attributeNames.getOrAddIdForName(key);
+        setAttribute(id, value);
+    }
+
+    public String getStringAttribute(int key) {
+        if (attributes.get(id) instanceof final String s) {
+            return s;
         }
 
+        return null;
+    }
+
+    public String getStringAttribute(String key) {
+        final var id = document.attributeNames.getIdForName(key);
+        if (id != null) {
+            if (attributes.get(id) instanceof final String s) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    public Boolean getBoolAttribute(int key) {
+        if (attributes.get(id) instanceof final Boolean b) {
+            return b;
+        }
+
+        return null;
+    }
+
+    public Boolean getBoolAttribute(String key) {
+        final var id = document.attributeNames.getIdForName(key);
+        if (id != null) {
+            if (attributes.get(id) instanceof final Boolean b) {
+                return b;
+            }
+        }
+        return null;
+    }
+
+    public Map<Integer, Object> getAttributes() {
+        return Collections.unmodifiableMap(attributes);
     }
 
     final Document document;
