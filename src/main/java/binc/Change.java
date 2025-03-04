@@ -1,4 +1,8 @@
+package binc;
+
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 public abstract class Change
@@ -35,7 +39,19 @@ public abstract class Change
         };
     }
 
-    static class AddNode extends Change {
+    void write(DataOutputStream output) throws IOException {
+        BincIo.writeLengthInverted(output, getChangeType());
+        final var o = new ByteArrayOutputStream();
+        final var out = new DataOutputStream(o);
+        writeContent(out);
+        final var bytes = o.toByteArray();
+        BincIo.writeLength(output, bytes.length);
+        output.write(bytes);
+    }
+
+    protected abstract void writeContent(DataOutputStream out) throws IOException;
+
+    public static class AddNode extends Change {
         public AddNode(long id, long parent, int indexInParent) {
             this.id = id;
             this.parent = parent;
@@ -47,6 +63,13 @@ public abstract class Change
             final var parent = BincIo.readLength(in);
             final var index_in_parent = (int) BincIo.readLength(in);
             return new AddNode(id, parent, index_in_parent);
+        }
+
+        @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.id);
+            BincIo.writeLength(out, this.parent);
+            BincIo.writeLength(out, this.indexInParent);
         }
 
         @Override
@@ -67,7 +90,7 @@ public abstract class Change
         private final int indexInParent;
     }
 
-    static class RemoveNode extends Change {
+    public static class RemoveNode extends Change {
         public RemoveNode(long id) {
             this.id = id;
         }
@@ -75,6 +98,11 @@ public abstract class Change
         public static RemoveNode fromInput(DataInputStream in, long length) throws IOException {
             final var id = BincIo.readLength(in);
             return new RemoveNode(id);
+        }
+
+        @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.id);
         }
 
         @Override
@@ -91,7 +119,7 @@ public abstract class Change
         private final long id;
     }
 
-    static class MoveNode extends Change {
+    public static class MoveNode extends Change {
         public MoveNode(long id, long newParent, int indexInNewParent) {
             this.id = id;
             this.newParent = newParent;
@@ -103,6 +131,13 @@ public abstract class Change
             final var newParent = BincIo.readLength(in);
             final var indexInNewParent = (int) BincIo.readLength(in);
             return new MoveNode(id, newParent, indexInNewParent);
+        }
+
+        @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.id);
+            BincIo.writeLength(out, this.newParent);
+            BincIo.writeLength(out, this.indexInNewParent);
         }
 
         @Override
@@ -125,7 +160,7 @@ public abstract class Change
         private final int indexInNewParent;
     }
 
-    static class SetType extends Change {
+    public static class SetType extends Change {
         public SetType(long id, int typeId) {
             this.id = id;
             this.typeId = typeId;
@@ -143,6 +178,12 @@ public abstract class Change
         }
 
         @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.id);
+            BincIo.writeLength(out, this.typeId);
+        }
+
+        @Override
         void apply(Document document) {
             document.getNode(this.id).type = this.typeId;
         }
@@ -151,7 +192,7 @@ public abstract class Change
         private final int typeId;
     }
     
-    static class DefineTypeName extends Change {
+    public static class DefineTypeName extends Change {
         public DefineTypeName(int typeId, String typeName) {
             this.typeId = typeId;
             this.typeName = typeName;
@@ -169,6 +210,12 @@ public abstract class Change
         }
 
         @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.typeId);
+            BincIo.writeString(out, this.typeName);
+        }
+
+        @Override
         void apply(Document document) {
             document.nodeTypeNames.put(typeId, typeName);
         }
@@ -177,7 +224,7 @@ public abstract class Change
         private final String typeName;
     }
 
-    static class SetName extends Change {
+    public static class SetName extends Change {
         public SetName(long id, String name) {
             this.id = id;
             this.name = name;
@@ -195,6 +242,12 @@ public abstract class Change
         }
 
         @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.id);
+            BincIo.writeString(out, this.name);
+        }
+
+        @Override
         void apply(Document document) {
             document.getNode(this.id).name = this.name;
         }
@@ -203,7 +256,7 @@ public abstract class Change
         private final String name;
     }
 
-    static class DefineAttributeName extends Change {
+    public static class DefineAttributeName extends Change {
         public DefineAttributeName(int attributeId, String attributeName) {
             this.attributeId = attributeId;
             this.attributeName = attributeName;
@@ -221,6 +274,12 @@ public abstract class Change
         }
 
         @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.attributeId);
+            BincIo.writeString(out, this.attributeName);
+        }
+
+        @Override
         void apply(Document document) {
             document.attributeNames.put(attributeId, attributeName);
         }
@@ -229,7 +288,7 @@ public abstract class Change
         private final String attributeName;
     }
 
-    static class SetBool extends Change {
+    public static class SetBool extends Change {
         public SetBool(long id, int attributeId, boolean value) {
             this.id = id;
             this.attributeId = attributeId;
@@ -241,12 +300,18 @@ public abstract class Change
             return SET_BOOL;
         }
 
-
         public static SetBool fromInput(DataInputStream in, long length) throws IOException {
             final var id = BincIo.readLength(in);
             final var attributeId = BincIo.readLength(in);
             final var value = BincIo.readBoolean(in);
             return new SetBool(id, (int)attributeId, value);
+        }
+
+        @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.id);
+            BincIo.writeLength(out, this.attributeId);
+            BincIo.writeBoolean(out, this.value);
         }
 
         @Override
@@ -259,7 +324,7 @@ public abstract class Change
         private final boolean value;
     }
 
-    static class SetString extends Change {
+    public static class SetString extends Change {
         public SetString(long id, int attributeId, String value) {
             this.id = id;
             this.attributeId = attributeId;
@@ -271,6 +336,13 @@ public abstract class Change
             final var attributeId = BincIo.readLength(in);
             final var value = BincIo.readString(in);
             return new SetString(id, (int)attributeId, value);
+        }
+
+        @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            BincIo.writeLength(out, this.id);
+            BincIo.writeLength(out, this.attributeId);
+            BincIo.writeString(out, this.value);
         }
 
         @Override
@@ -288,7 +360,7 @@ public abstract class Change
         private final String value;
     }
 
-    static class Unknown extends Change {
+    public static class Unknown extends Change {
         Unknown(long changeType, byte[] bytes) {
             this.changeType = changeType;
             this.bytes = bytes;
@@ -298,6 +370,11 @@ public abstract class Change
             final var bytes = new byte[(int)length];
             in.readFully(bytes);
             return new Unknown(changeType, bytes);
+        }
+
+        @Override
+        protected void writeContent(DataOutputStream out) throws IOException {
+            out.write(this.bytes);
         }
 
         @Override

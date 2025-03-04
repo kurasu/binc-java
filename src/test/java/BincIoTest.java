@@ -1,3 +1,4 @@
+import binc.BincIo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -102,9 +103,9 @@ class BincIoTest {
     @Test
     void toFourCC() {
         final var fourCC = BincIo.toFourCC("binc");
-        Assertions.assertEquals(fourCC & 0xff, 'c');
-        Assertions.assertEquals((fourCC >> 8) & 0xff, 'n');
-        Assertions.assertEquals((fourCC >> 16) & 0xff, 'i');
-        Assertions.assertEquals((fourCC >> 24) & 0xff, 'b');
+        Assertions.assertEquals('c', fourCC & 0xff);
+        Assertions.assertEquals('n', (fourCC >> 8) & 0xff);
+        Assertions.assertEquals('i', (fourCC >> 16) & 0xff);
+        Assertions.assertEquals('b', (fourCC >> 24) & 0xff);
     }
 }

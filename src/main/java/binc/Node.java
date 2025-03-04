@@ -1,3 +1,5 @@
+package binc;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +39,14 @@ public class Node {
         return null;
 
         // or map in Doument?
+    }
+
+    public Node child(final int index) {
+        return this.children.get(index);
+    }
+
+    public int childCount() {
+        return this.children.size();
     }
 
     void removeChild(long id) {

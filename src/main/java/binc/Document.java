@@ -1,3 +1,7 @@
+package binc;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,4 +63,11 @@ public class Document
     public Map<Integer, String> nodeTypeNames = new HashMap<>();
     public Map<Integer, String> attributeNames = new HashMap<>();
 
+    public void write(DataOutputStream out) throws IOException {
+        repository.write(out);
+    }
+
+    public Repository getRepository() {
+        return repository;
+    }
 }
