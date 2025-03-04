@@ -35,7 +35,7 @@ public class Document
         return rootNode.getNode(nodeID);
     }
 
-    private void addAndApply(final Change change) {
+    void addAndApply(final Change change) {
         repository.changes.add(change);
         change.apply(this);
     }
@@ -54,14 +54,14 @@ public class Document
         }
     }
 
-    private Node rootNode = new Node(this, ROOT_ID);
+    Node rootNode = new Node(this, ROOT_ID);
 
-    private final Repository repository;
+    final Repository repository;
 
     private long nextId = ROOT_ID+1;
 
-    public Map<Integer, String> nodeTypeNames = new HashMap<>();
-    public Map<Integer, String> attributeNames = new HashMap<>();
+    IdNameMap nodeTypeNames = new IdNameMap.TypeNameMap(this);
+    IdNameMap attributeNames = new IdNameMap.AttributeNameMap(this);
 
     public void write(DataOutputStream out) throws IOException {
         repository.write(out);

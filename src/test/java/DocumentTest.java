@@ -49,4 +49,30 @@ class DocumentTest {
         Assertions.assertNotNull(readDocument);
         Assertions.assertEquals(document.root().childCount(), readDocument.root().childCount());
     }
+
+    @Test
+    void writeComplex() throws IOException {
+        final var document = new Document();
+        final var n1 = document.root().addChild();
+        final var n2 = document.root().addChild();
+        final var n3 = n2.addChild();
+
+        n1.setType("shelf");
+        n2.setType("shelf");
+        n3.setType("book");
+        n1.setName("My favorites");
+        n2.setName("To write");
+        n2.setName("binc manual");
+
+        final var out = new ByteArrayOutputStream();
+        document.write(new DataOutputStream(out));
+
+        final var input = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
+        final var repository = Repository.read(input);
+        Assertions.assertNotNull(repository);
+        Assertions.assertEquals(document.getRepository().getChanges().size(), repository.getChanges().size());
+        final var readDocument = new Document(repository);
+        Assertions.assertNotNull(readDocument);
+        Assertions.assertEquals(document.root().childCount(), readDocument.root().childCount());
+    }
 }

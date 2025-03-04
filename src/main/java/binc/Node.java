@@ -16,15 +16,6 @@ public class Node {
         return this.document.addNode(this.id);
     }
 
-    final Document document;
-    final long id;
-    Node parent;
-    int type;
-    String name;
-
-    final List<Node> children = new ArrayList<>();
-    final Map<Integer, Object> attributes = new HashMap<>();
-
     public Node getNode(long nodeID) {
         if (this.id == nodeID) {
             return this;
@@ -57,4 +48,41 @@ public class Node {
             }
         }
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        document.addAndApply(new Change.SetName(this.id, name));
+    }
+
+    public int getTypeId() {
+        return this.type;
+    }
+
+    public String getTypeName() {
+        return document.nodeTypeNames.getOrDefault(this.type, Integer.toString(this.type));
+    }
+
+    public void setType(final int typeId) {
+        document.addAndApply(new Change.SetType(this.id, typeId));
+    }
+
+    public void setType(String typeName) {
+        final var id = document.nodeTypeNames.getIdForName(typeName);
+        if  (id == null) {
+
+        }
+
+    }
+
+    final Document document;
+    final long id;
+    Node parent;
+    int type;
+    String name;
+
+    final List<Node> children = new ArrayList<>();
+    final Map<Integer, Object> attributes = new HashMap<>();
 }
