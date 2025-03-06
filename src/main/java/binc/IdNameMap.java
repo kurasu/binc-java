@@ -38,7 +38,7 @@ public abstract class IdNameMap extends HashMap<Integer, String> {
 
         @Override
         protected void defineIdName(int id, String name) {
-            document.addAndApply(new Change.DefineTypeName(id, name));
+            document.addAndApply(new Operation.DefineTypeName(id, name));
         }
     }
 
@@ -50,7 +50,7 @@ public abstract class IdNameMap extends HashMap<Integer, String> {
 
         @Override
         protected void defineIdName(int id, String name) {
-            document.addAndApply(new Change.DefineAttributeName(id, name));
+            document.addAndApply(new Operation.DefineAttributeName(id, name));
         }
     }
 

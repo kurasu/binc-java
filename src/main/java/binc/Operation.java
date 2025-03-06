@@ -5,7 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public abstract class Change
+public abstract class Operation
 {
     protected static final int ADD_NODE = 0x01;
     protected static final int REMOVE_NODE = 0x02;
@@ -17,15 +17,15 @@ public abstract class Change
     protected static final int SET_BOOL = 0x08;
     protected static final int SET_STRING = 0x09;
 
-    public abstract int getChangeType();
+    public abstract int getOperationId();
 
     abstract void apply(Document document);
 
-    public static Change read(DataInputStream in) throws IOException {
-        final var changeType = BincIo.readLengthInverted(in);
+    public static Operation read(DataInputStream in) throws IOException {
+        final var operation = BincIo.readLengthInverted(in);
         final var length = BincIo.readLength(in);
 
-        return switch ((int)changeType) {
+        return switch ((int)operation) {
             case ADD_NODE -> AddNode.fromInput(in, length);
             case REMOVE_NODE -> RemoveNode.fromInput(in, length);
             case MOVE_NODE -> MoveNode.fromInput(in, length);
@@ -35,12 +35,12 @@ public abstract class Change
             case DEFINE_ATTRIBUTE_NAME -> DefineAttributeName.fromInput(in, length);
             case SET_BOOL -> SetBool.fromInput(in, length);
             case SET_STRING -> SetString.fromInput(in, length);
-            default -> Unknown.fromInput(in, changeType, length);
+            default -> Unknown.fromInput(in, operation, length);
         };
     }
 
     void write(DataOutputStream output) throws IOException {
-        BincIo.writeLengthInverted(output, getChangeType());
+        BincIo.writeLengthInverted(output, getOperationId());
         final var o = new ByteArrayOutputStream();
         final var out = new DataOutputStream(o);
         writeContent(out);
@@ -51,7 +51,7 @@ public abstract class Change
 
     protected abstract void writeContent(DataOutputStream out) throws IOException;
 
-    public static class AddNode extends Change {
+    public static class AddNode extends Operation {
         public AddNode(long id, long parent, int indexInParent) {
             this.id = id;
             this.parent = parent;
@@ -73,7 +73,7 @@ public abstract class Change
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return ADD_NODE;
         }
 
@@ -90,7 +90,7 @@ public abstract class Change
         private final int indexInParent;
     }
 
-    public static class RemoveNode extends Change {
+    public static class RemoveNode extends Operation {
         public RemoveNode(long id) {
             this.id = id;
         }
@@ -106,7 +106,7 @@ public abstract class Change
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return REMOVE_NODE;
         }
 
@@ -119,7 +119,7 @@ public abstract class Change
         private final long id;
     }
 
-    public static class MoveNode extends Change {
+    public static class MoveNode extends Operation {
         public MoveNode(long id, long newParent, int indexInNewParent) {
             this.id = id;
             this.newParent = newParent;
@@ -141,7 +141,7 @@ public abstract class Change
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return MOVE_NODE;
         }
 
@@ -160,14 +160,14 @@ public abstract class Change
         private final int indexInNewParent;
     }
 
-    public static class SetType extends Change {
+    public static class SetType extends Operation {
         public SetType(long id, int typeId) {
             this.id = id;
             this.typeId = typeId;
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return SET_TYPE;
         }
 
@@ -192,14 +192,14 @@ public abstract class Change
         private final int typeId;
     }
     
-    public static class DefineTypeName extends Change {
+    public static class DefineTypeName extends Operation {
         public DefineTypeName(int typeId, String typeName) {
             this.typeId = typeId;
             this.typeName = typeName;
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return DEFINE_TYPE_NAME;
         }
 
@@ -224,14 +224,14 @@ public abstract class Change
         private final String typeName;
     }
 
-    public static class SetName extends Change {
+    public static class SetName extends Operation {
         public SetName(long id, String name) {
             this.id = id;
             this.name = name;
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return SET_NAME;
         }
 
@@ -256,14 +256,14 @@ public abstract class Change
         private final String name;
     }
 
-    public static class DefineAttributeName extends Change {
+    public static class DefineAttributeName extends Operation {
         public DefineAttributeName(int attributeId, String attributeName) {
             this.attributeId = attributeId;
             this.attributeName = attributeName;
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return DEFINE_ATTRIBUTE_NAME;
         }
 
@@ -288,7 +288,7 @@ public abstract class Change
         private final String attributeName;
     }
 
-    public static class SetBool extends Change {
+    public static class SetBool extends Operation {
         public SetBool(long id, int attributeId, boolean value) {
             this.id = id;
             this.attributeId = attributeId;
@@ -296,7 +296,7 @@ public abstract class Change
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return SET_BOOL;
         }
 
@@ -324,7 +324,7 @@ public abstract class Change
         private final boolean value;
     }
 
-    public static class SetString extends Change {
+    public static class SetString extends Operation {
         public SetString(long id, int attributeId, String value) {
             this.id = id;
             this.attributeId = attributeId;
@@ -346,7 +346,7 @@ public abstract class Change
         }
 
         @Override
-        public int getChangeType() {
+        public int getOperationId() {
             return SET_STRING;
         }
 
@@ -360,16 +360,16 @@ public abstract class Change
         private final String value;
     }
 
-    public static class Unknown extends Change {
-        Unknown(long changeType, byte[] bytes) {
-            this.changeType = changeType;
+    public static class Unknown extends Operation {
+        Unknown(long operationId, byte[] bytes) {
+            this.operationId = operationId;
             this.bytes = bytes;
         }
 
-        public static Change fromInput(DataInputStream in, long changeType, long length) throws IOException {
+        public static Operation fromInput(DataInputStream in, long operation, long length) throws IOException {
             final var bytes = new byte[(int)length];
             in.readFully(bytes);
-            return new Unknown(changeType, bytes);
+            return new Unknown(operation, bytes);
         }
 
         @Override
@@ -378,8 +378,8 @@ public abstract class Change
         }
 
         @Override
-        public int getChangeType() {
-            return (int)this.changeType;
+        public int getOperationId() {
+            return (int)this.operationId;
         }
 
         @Override
@@ -387,7 +387,7 @@ public abstract class Change
 
         }
 
-        private final long changeType;
+        private final long operationId;
         private final byte[] bytes;
     }
 }

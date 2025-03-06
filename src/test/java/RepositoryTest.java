@@ -1,4 +1,4 @@
-import binc.Change;
+import binc.Operation;
 import binc.Repository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -13,8 +13,8 @@ class RepositoryTest {
         final var repository = Repository.read(in);
         Assertions.assertNotNull(repository);
 
-        for (Change change : repository.getChanges()) {
-            Assertions.assertFalse(change instanceof Change.Unknown);
+        for (Operation operation : repository.getOperations()) {
+            Assertions.assertFalse(operation instanceof Operation.Unknown);
         }
     }
 

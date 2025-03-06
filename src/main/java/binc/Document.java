@@ -2,8 +2,6 @@ package binc;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Document
 {
@@ -21,7 +19,7 @@ public class Document
     public Node addNode(final long parentID) {
         final var id = getNextId();
         final var parent = getNode(parentID);
-        final var msg = new Change.AddNode(id, parentID, parent.children.size());
+        final var msg = new Operation.AddNode(id, parentID, parent.children.size());
         addAndApply(msg);
         return getNode(id);
     }
@@ -35,9 +33,9 @@ public class Document
         return rootNode.getNode(nodeID);
     }
 
-    void addAndApply(final Change change) {
-        repository.changes.add(change);
-        change.apply(this);
+    void addAndApply(final Operation operation) {
+        repository.operations.add(operation);
+        operation.apply(this);
     }
 
     long getNextId() {
@@ -49,8 +47,8 @@ public class Document
         attributeNames.clear();
         rootNode = new Node(this, ROOT_ID);
 
-        for (Change change : repository.changes) {
-            change.apply(this);
+        for (Operation operation : repository.operations) {
+            operation.apply(this);
         }
     }
 

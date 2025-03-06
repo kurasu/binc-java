@@ -12,7 +12,7 @@ public class Repository {
 
     final static int BINC_VERSION = 1;
 
-    final List<Change> changes = new ArrayList<>();
+    final List<Operation> operations = new ArrayList<>();
 
     public static Repository read(DataInputStream in) throws IOException {
         final var repo = new Repository();
@@ -26,8 +26,7 @@ public class Repository {
 
         try {
             while (true) {
-                final var change = Change.read(in);
-                repo.changes.add(change);
+                repo.operations.add(Operation.read(in));
             }
         }
         catch (EOFException e) {
@@ -42,12 +41,12 @@ public class Repository {
         out.writeInt(BincIo.toFourCC("binc"));
         out.writeInt(BINC_VERSION);
 
-        for (Change change : changes) {
-            change.write(out);
+        for (Operation operation : operations) {
+            operation.write(out);
         }
     }
 
-    public List<Change> getChanges() {
-        return Collections.unmodifiableList(changes);
+    public List<Operation> getOperations() {
+        return Collections.unmodifiableList(operations);
     }
 }

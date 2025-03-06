@@ -1,5 +1,4 @@
 import binc.Document;
-import binc.Node;
 import binc.Repository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -45,7 +44,7 @@ class DocumentTest {
         final var input = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
         final var repository = Repository.read(input);
         Assertions.assertNotNull(repository);
-        Assertions.assertEquals(document.getRepository().getChanges().size(), repository.getChanges().size());
+        Assertions.assertEquals(document.getRepository().getOperations().size(), repository.getOperations().size());
         final var readDocument = new Document(repository);
         Assertions.assertNotNull(readDocument);
         Assertions.assertEquals(document.root().childCount(), readDocument.root().childCount());
@@ -76,7 +75,7 @@ class DocumentTest {
         final var input = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
         final var repository = Repository.read(input);
         Assertions.assertNotNull(repository);
-        Assertions.assertEquals(document.getRepository().getChanges().size(), repository.getChanges().size());
+        Assertions.assertEquals(document.getRepository().getOperations().size(), repository.getOperations().size());
         final var readDocument = new Document(repository);
         Assertions.assertNotNull(readDocument);
         Assertions.assertEquals(root.childCount(), readDocument.root().childCount());

@@ -51,7 +51,7 @@ public class Node {
     }
 
     public void setName(String name) {
-        document.addAndApply(new Change.SetName(this.id, name));
+        document.addAndApply(new Operation.SetName(this.id, name));
     }
 
     public int getTypeId() {
@@ -63,7 +63,7 @@ public class Node {
     }
 
     public void setType(final int typeId) {
-        document.addAndApply(new Change.SetType(this.id, typeId));
+        document.addAndApply(new Operation.SetType(this.id, typeId));
     }
 
     public void setType(String typeName) {
@@ -72,7 +72,7 @@ public class Node {
     }
 
     public void setAttribute(int key, String value) {
-        document.addAndApply(new Change.SetString(id, key, value));
+        document.addAndApply(new Operation.SetString(id, key, value));
     }
 
     public void setAttribute(String key, String value) {
@@ -81,7 +81,7 @@ public class Node {
     }
 
     public void setAttribute(int key, boolean value) {
-        document.addAndApply(new Change.SetBool(id, key, value));
+        document.addAndApply(new Operation.SetBool(id, key, value));
     }
 
     public void setAttribute(String key, boolean value) {
