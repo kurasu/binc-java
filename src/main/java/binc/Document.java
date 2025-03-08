@@ -8,11 +8,11 @@ public class Document
     public static final long ROOT_ID = 0;
 
     public Document() {
-        repository = new Repository();
+        journal = new Journal();
     }
 
-    public Document(final Repository repository) {
-        this.repository = repository;
+    public Document(final Journal journal) {
+        this.journal = journal;
         recreate();
     }
 
@@ -34,7 +34,7 @@ public class Document
     }
 
     void addAndApply(final Operation operation) {
-        repository.operations.add(operation);
+        journal.operations.add(operation);
         operation.apply(this);
     }
 
@@ -47,14 +47,14 @@ public class Document
         attributeNames.clear();
         rootNode = new Node(this, ROOT_ID);
 
-        for (Operation operation : repository.operations) {
+        for (Operation operation : journal.operations) {
             operation.apply(this);
         }
     }
 
     Node rootNode = new Node(this, ROOT_ID);
 
-    final Repository repository;
+    final Journal journal;
 
     private long nextId = ROOT_ID+1;
 
@@ -62,10 +62,10 @@ public class Document
     IdNameMap attributeNames = new IdNameMap.AttributeNameMap(this);
 
     public void write(DataOutputStream out) throws IOException {
-        repository.write(out);
+        journal.write(out);
     }
 
-    public Repository getRepository() {
-        return repository;
+    public Journal getJournal() {
+        return journal;
     }
 }

@@ -8,14 +8,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Repository {
+public class Journal {
 
     final static int BINC_VERSION = 1;
 
     final List<Operation> operations = new ArrayList<>();
 
-    public static Repository read(DataInputStream in) throws IOException {
-        final var repo = new Repository();
+    public static Journal read(DataInputStream in) throws IOException {
+        final var repo = new Journal();
         final var bincID = in.readInt();
         final var bincVersion = in.readInt();
 

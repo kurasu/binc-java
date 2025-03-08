@@ -1,19 +1,19 @@
 import binc.Operation;
-import binc.Repository;
+import binc.Journal;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
 
-class RepositoryTest {
+class JournalTest {
 
     @Test
     void readFile() throws IOException {
         final var in = new DataInputStream(new FileInputStream("test-file.binc"));
-        final var repository = Repository.read(in);
-        Assertions.assertNotNull(repository);
+        final var journal = Journal.read(in);
+        Assertions.assertNotNull(journal);
 
-        for (Operation operation : repository.getOperations()) {
+        for (Operation operation : journal.getOperations()) {
             Assertions.assertFalse(operation instanceof Operation.Unknown);
         }
     }
@@ -21,11 +21,11 @@ class RepositoryTest {
     @Test
     void writeFile() throws IOException {
         final var in = new DataInputStream(new FileInputStream("test-file.binc"));
-        final var repository = Repository.read(in);
-        Assertions.assertNotNull(repository);
+        final var journal = Journal.read(in);
+        Assertions.assertNotNull(journal);
 
         final var out = new ByteArrayOutputStream();
-        repository.write(new DataOutputStream(out));
+        journal.write(new DataOutputStream(out));
         final var reference = new DataInputStream(new FileInputStream("test-file.binc")).readAllBytes();
         Assertions.assertArrayEquals(reference, out.toByteArray());
     }
