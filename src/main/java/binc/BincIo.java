@@ -7,17 +7,18 @@ import java.nio.charset.StandardCharsets;
 
 public class BincIo {
     public static void writeLength(DataOutputStream out, long value) throws IOException {
-        final long T1 = 219;
+        final long T1 = 204;
         final long T2 = 32 * 256 + T1;
+        final var T3 = 16 * 65536 + T2;
 
         if (value <= T1) {
             out.writeByte((int) value);
         } else if (value < T2) {
             out.writeByte((int) (((value - T1) >> 8) + T1 + 1));
             out.writeByte((int) ((value - T1) & 0xFF));
-        } else if (value < (65536 + T2)){
-            out.writeByte(252);
-            out.writeShort((int) (value - T2));
+        } else if (value < T3){
+            out.writeByte((int) (237 + ((value - T2) >> 16)));
+            out.writeShort((int) (value - T2) & 0xFFFF);
         } else if (value < 16777216) {
             out.writeByte(253);
             out.writeByte((int) (value >> 16)& 0xFF);
@@ -33,17 +34,18 @@ public class BincIo {
     }
 
     public static void writeLengthInverted(DataOutputStream out, long value) throws IOException {
-        final long T1 = 219;
+        final long T1 = 204;
         final long T2 = 32 * 256 + T1;
+        final var T3 = 16 * 65536 + T2;
 
         if (value <= T1) {
             out.writeByte((int) ~value);
         } else if (value < T2) {
             out.writeByte((int) ~(((value - T1) >> 8) + T1 + 1));
             out.writeByte((int) ~((value - T1) & 0xFF));
-        } else if (value < (65536 + T2)){
-            out.writeByte(~252);
-            out.writeShort(~(int) (value - T2));
+        } else if (value < T3){
+            out.writeByte(~((int) (237 + ((value - T2) >> 16))));
+            out.writeShort(~((int) (value - T2)) & 0xFFFF);
         } else if (value < 16777216) {
             out.writeByte(~253);
             out.writeByte(~((int) (value >> 16) & 0xFF));
@@ -69,20 +71,20 @@ public class BincIo {
     }
 
     public static long readLength(DataInputStream in) throws IOException {
-        final long T1 = 219;
-        final long T11 = 220;
+        final long T1 = 204;
+        final long T11 = 205;
         final long T2 = 32 * 256 + T1;
 
         int a0 = in.readUnsignedByte();
 
-        if (a0 <= T1) {
+        if (a0 < 205) {
             return a0;
-        } else if (a0 <= 251) {
+        } else if (a0 < 237){
             long a1 = in.readUnsignedByte();
             return ((a0 - T11) << 8 | a1) + T1;
-        } else if (a0 == 252) {
+        } else if (a0 < 253) {
             long a1 = in.readUnsignedShort();
-            return a1 + T2;
+            return a1 + T2 + ((a0 - 237) << 16);
         } else if (a0 == 253) {
             long a1 = in.readUnsignedByte();
             long a2 = in.readUnsignedByte();
@@ -96,20 +98,20 @@ public class BincIo {
     }
 
     public static long readLengthInverted(DataInputStream in) throws IOException {
-        final long T1 = 219;
-        final long T11 = 220;
+        final long T1 = 204;
+        final long T11 = 205;
         final long T2 = 32 * 256 + T1;
 
         int a0 = in.readUnsignedByte() ^ 0xFF;
 
-        if (a0 <= T1) {
+        if (a0 < 205) {
             return a0;
-        } else if (a0 <= 251) {
+        } else if (a0 < 237){
             long a1 = in.readUnsignedByte() ^ 0xFF;
             return ((a0 - T11) << 8 | a1) + T1;
-        } else if (a0 == 252) {
+        } else if (a0 < 253) {
             long a1 = in.readUnsignedShort() ^ 0xFFFF;
-            return a1 + T2;
+            return a1 + T2 + ((a0 - 237) << 16);
         } else if (a0 == 253) {
             long a1 = in.readUnsignedByte() ^ 0xFF;
             long a2 = in.readUnsignedByte() ^ 0xFF;

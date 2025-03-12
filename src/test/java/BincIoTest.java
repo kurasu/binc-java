@@ -12,12 +12,12 @@ class BincIoTest {
 
     final long[] valuesAndLengths = new long[] {
             0, 1,
-            219, 1,
-            220, 2,
-            8410, 2,
-            8411, 3,
-            65536 + 8410, 3,
-            65536 + 8411, 4,
+            204, 1,
+            205, 2,
+            8395, 2,
+            8396, 3,
+            1056971, 3,
+            1056972, 4,
             16777215, 4,
             16777216, 5,
             0xFFFFFFFFL, 5,
@@ -113,7 +113,7 @@ class BincIoTest {
 
     @Test
     void readLength256() throws IOException {
-        final var bytes = new byte[] {(byte) 0xDC, 0x25 };
+        final var bytes = new byte[] {(byte) 205, 256-204 };
         final var in = new DataInputStream(new ByteArrayInputStream(bytes));
         final var length = BincIo.readLength(in);
         Assertions.assertEquals(256, length);
@@ -128,7 +128,7 @@ class BincIoTest {
     }
     @Test
     void readLengthInverted256() throws IOException {
-        final var bytes = new byte[] {~(byte)0xDC, ~(byte)0x25};
+        final var bytes = new byte[] {~(byte)205, ~(byte)(256-204)};
         final var in = new DataInputStream(new ByteArrayInputStream(bytes));
         final var length = BincIo.readLengthInverted(in);
         Assertions.assertEquals(256, length);
