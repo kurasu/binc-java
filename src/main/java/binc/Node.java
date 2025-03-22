@@ -4,13 +4,18 @@ import java.util.*;
 
 public class Node {
 
-    public Node(Document document, long id) {
+    public Node(Document document, long id, long type) {
         this.document = document;
         this.id = id;
+        this.type = type;
     }
 
-    public Node addChild() {
-        return this.document.addNode(this.id);
+    public Node addChild(long type) {
+        return this.document.addNode(this.id, type);
+    }
+
+    public Node addChild(String typeName) {
+        return this.document.addNode(this.id, typeName);
     }
 
     public Node getNode(long nodeID) {
@@ -54,15 +59,15 @@ public class Node {
         document.addAndApply(new Operation.SetName(this.id, name));
     }
 
-    public int getTypeId() {
+    public long getType() {
         return this.type;
     }
 
     public String getTypeName() {
-        return document.nodeTypeNames.getOrDefault(this.type, Integer.toString(this.type));
+        return document.nodeTypeNames.getOrDefault(this.type, Long.toString(this.type));
     }
 
-    public void setType(final int typeId) {
+    public void setType(final long typeId) {
         document.addAndApply(new Operation.SetType(this.id, typeId));
     }
 
@@ -71,7 +76,7 @@ public class Node {
         setType(id);
     }
 
-    public void setAttribute(int key, String value) {
+    public void setAttribute(long key, String value) {
         document.addAndApply(new Operation.SetString(id, key, value));
     }
 
@@ -80,7 +85,7 @@ public class Node {
         setAttribute(id, value);
     }
 
-    public void setAttribute(int key, boolean value) {
+    public void setAttribute(long key, boolean value) {
         document.addAndApply(new Operation.SetBool(id, key, value));
     }
 
@@ -89,7 +94,7 @@ public class Node {
         setAttribute(id, value);
     }
 
-    public String getStringAttribute(int key) {
+    public String getStringAttribute(long key) {
         if (attributes.get(id) instanceof final String s) {
             return s;
         }
@@ -107,7 +112,7 @@ public class Node {
         return null;
     }
 
-    public Boolean getBoolAttribute(int key) {
+    public Boolean getBoolAttribute(long key) {
         if (attributes.get(id) instanceof final Boolean b) {
             return b;
         }
@@ -125,16 +130,20 @@ public class Node {
         return null;
     }
 
-    public Map<Integer, Object> getAttributes() {
+    public Map<Long, Object> getAttributes() {
         return Collections.unmodifiableMap(attributes);
+    }
+
+    public long getId() {
+        return id;
     }
 
     final Document document;
     final long id;
     Node parent;
-    int type;
+    long type;
     String name;
 
     final List<Node> children = new ArrayList<>();
-    final Map<Integer, Object> attributes = new HashMap<>();
+    final Map<Long, Object> attributes = new HashMap<>();
 }

@@ -52,22 +52,25 @@ public abstract class Operation
     protected abstract void writeContent(DataOutputStream out) throws IOException;
 
     public static class AddNode extends Operation {
-        public AddNode(long id, long parent, int indexInParent) {
+        public AddNode(long id, long type, long parent, int indexInParent) {
             this.id = id;
+            this.type = type;
             this.parent = parent;
             this.indexInParent = indexInParent;
         }
 
         public static AddNode fromInput(DataInputStream in, long length) throws IOException {
             final var id = BincIo.readLength(in);
+            final var type = BincIo.readLength(in);
             final var parent = BincIo.readLength(in);
             final var index_in_parent = (int) BincIo.readLength(in);
-            return new AddNode(id, parent, index_in_parent);
+            return new AddNode(id, type, parent, index_in_parent);
         }
 
         @Override
         protected void writeContent(DataOutputStream out) throws IOException {
             BincIo.writeLength(out, this.id);
+            BincIo.writeLength(out, this.type);
             BincIo.writeLength(out, this.parent);
             BincIo.writeLength(out, this.indexInParent);
         }
@@ -79,13 +82,14 @@ public abstract class Operation
 
         @Override
         public void apply(Document document) {
-            final var node = new Node(document, this.id);
+            final var node = new Node(document, this.id, this.type);
             final var parent = document.getNode(this.parent);
             node.parent = parent;
             parent.children.add(this.indexInParent, node);
         }
 
         private final long id;
+        private final long type;
         private final long parent;
         private final int indexInParent;
     }
@@ -161,7 +165,7 @@ public abstract class Operation
     }
 
     public static class SetType extends Operation {
-        public SetType(long id, int typeId) {
+        public SetType(long id, long typeId) {
             this.id = id;
             this.typeId = typeId;
         }
@@ -189,11 +193,11 @@ public abstract class Operation
         }
 
         private final long id;
-        private final int typeId;
+        private final long typeId;
     }
     
     public static class DefineTypeName extends Operation {
-        public DefineTypeName(int typeId, String typeName) {
+        public DefineTypeName(long typeId, String typeName) {
             this.typeId = typeId;
             this.typeName = typeName;
         }
@@ -220,7 +224,7 @@ public abstract class Operation
             document.nodeTypeNames.put(typeId, typeName);
         }
 
-        private final int typeId;
+        private final long typeId;
         private final String typeName;
     }
 
@@ -257,7 +261,7 @@ public abstract class Operation
     }
 
     public static class DefineAttributeName extends Operation {
-        public DefineAttributeName(int attributeId, String attributeName) {
+        public DefineAttributeName(long attributeId, String attributeName) {
             this.attributeId = attributeId;
             this.attributeName = attributeName;
         }
@@ -270,7 +274,7 @@ public abstract class Operation
         public static DefineAttributeName fromInput(DataInputStream in, long length) throws IOException {
             final var attrId = BincIo.readLength(in);
             final var attrName = BincIo.readString(in);
-            return new DefineAttributeName((int)attrId, attrName);
+            return new DefineAttributeName(attrId, attrName);
         }
 
         @Override
@@ -284,12 +288,12 @@ public abstract class Operation
             document.attributeNames.put(attributeId, attributeName);
         }
 
-        private final int attributeId;
+        private final long attributeId;
         private final String attributeName;
     }
 
     public static class SetBool extends Operation {
-        public SetBool(long id, int attributeId, boolean value) {
+        public SetBool(long id, long attributeId, boolean value) {
             this.id = id;
             this.attributeId = attributeId;
             this.value = value;
@@ -304,7 +308,7 @@ public abstract class Operation
             final var id = BincIo.readLength(in);
             final var attributeId = BincIo.readLength(in);
             final var value = BincIo.readBoolean(in);
-            return new SetBool(id, (int)attributeId, value);
+            return new SetBool(id, attributeId, value);
         }
 
         @Override
@@ -320,12 +324,12 @@ public abstract class Operation
         }
 
         private final long id;
-        private final int attributeId;
+        private final long attributeId;
         private final boolean value;
     }
 
     public static class SetString extends Operation {
-        public SetString(long id, int attributeId, String value) {
+        public SetString(long id, long attributeId, String value) {
             this.id = id;
             this.attributeId = attributeId;
             this.value = value;
@@ -356,7 +360,7 @@ public abstract class Operation
         }
 
         private final long id;
-        private final int attributeId;
+        private final long attributeId;
         private final String value;
     }
 

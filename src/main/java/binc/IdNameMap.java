@@ -2,13 +2,13 @@ package binc;
 
 import java.util.HashMap;
 
-public abstract class IdNameMap extends HashMap<Integer, String> {
+public abstract class IdNameMap extends HashMap<Long, String> {
 
     protected IdNameMap(final Document document) {
         this.document = document;
     }
 
-    public Integer getIdForName(String name){
+    public Long getIdForName(String name){
         for (final var entry : entrySet()) {
             if (entry.getValue().equals(name)) {
                 return entry.getKey();
@@ -17,7 +17,7 @@ public abstract class IdNameMap extends HashMap<Integer, String> {
         return null;
     }
 
-    int getOrAddIdForName(String name){
+    long getOrAddIdForName(String name){
         final var id = getIdForName(name);
         if (id == null) {
             while (get(nextId) != null) {
@@ -29,7 +29,7 @@ public abstract class IdNameMap extends HashMap<Integer, String> {
         return id;
     }
 
-    protected abstract void defineIdName(int id, String name);
+    protected abstract void defineIdName(long id, String name);
 
     static class TypeNameMap extends IdNameMap {
         public TypeNameMap(Document document) {
@@ -37,11 +37,10 @@ public abstract class IdNameMap extends HashMap<Integer, String> {
         }
 
         @Override
-        protected void defineIdName(int id, String name) {
+        protected void defineIdName(long id, String name) {
             document.addAndApply(new Operation.DefineTypeName(id, name));
         }
     }
-
 
     static class AttributeNameMap extends IdNameMap {
         public AttributeNameMap(Document document) {
@@ -49,11 +48,11 @@ public abstract class IdNameMap extends HashMap<Integer, String> {
         }
 
         @Override
-        protected void defineIdName(int id, String name) {
+        protected void defineIdName(long id, String name) {
             document.addAndApply(new Operation.DefineAttributeName(id, name));
         }
     }
 
-    private int nextId = 0;
+    private long nextId = 1;
     protected final Document document;
 }

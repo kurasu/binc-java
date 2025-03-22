@@ -16,10 +16,19 @@ public class Document
         recreate();
     }
 
-    public Node addNode(final long parentID) {
+    public Node addNode(final long parentID, final long type) {
         final var id = getNextId();
         final var parent = getNode(parentID);
-        final var msg = new Operation.AddNode(id, parentID, parent.children.size());
+        final var msg = new Operation.AddNode(id, type, parentID, parent.children.size());
+        addAndApply(msg);
+        return getNode(id);
+    }
+
+    public Node addNode(final long parentID, final String typeName) {
+        final var id = getNextId();
+        final var parent = getNode(parentID);
+        final long type = nodeTypeNames.getOrAddIdForName(typeName);
+        final var msg = new Operation.AddNode(id, type, parentID, parent.children.size());
         addAndApply(msg);
         return getNode(id);
     }
@@ -45,14 +54,14 @@ public class Document
     private void recreate() {
         nodeTypeNames.clear();
         attributeNames.clear();
-        rootNode = new Node(this, ROOT_ID);
+        rootNode = new Node(this, ROOT_ID, 0);
 
         for (Operation operation : journal.operations) {
             operation.apply(this);
         }
     }
 
-    Node rootNode = new Node(this, ROOT_ID);
+    Node rootNode = new Node(this, ROOT_ID, 0);
 
     final Journal journal;
 
